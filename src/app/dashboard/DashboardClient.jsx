@@ -20,7 +20,7 @@ export default function DashboardClient({ workouts, selectedDate }) {
         <h1 className="text-3xl font-bold tracking-tight">Liftingdiary</h1>
       </div>
       <div className="flex flex-col gap-6 px-8 pb-8 max-w-2xl mx-auto w-full">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <h2 className="text-2xl font-semibold">Workout Log</h2>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -44,6 +44,9 @@ export default function DashboardClient({ workouts, selectedDate }) {
             />
           </PopoverContent>
         </Popover>
+        <Button onClick={() => router.push(`/dashboard/workout/new?date=${format(date, "yyyy-MM-dd")}`)}>
+          Log workout
+        </Button>
       </div>
 
       {workouts.length === 0 ? (

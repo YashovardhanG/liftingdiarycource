@@ -21,6 +21,14 @@ function dayEnd(date) {
   return d;
 }
 
+export async function createWorkout(userId, data) {
+  const [workout] = await db
+    .insert(workoutsTable)
+    .values({ user_id: userId, ...data })
+    .returning({ id: workoutsTable.id });
+  return workout;
+}
+
 export async function getUserWorkouts(date = new Date()) {
   const user = await currentUser();
   if (!user) throw new Error("Unauthorized");
