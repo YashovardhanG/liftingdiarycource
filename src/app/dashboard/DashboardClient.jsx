@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -8,14 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarIcon } from "lucide-react";
 
-export default function DashboardClient({ workouts }) {
-  const [date, setDate] = useState(new Date());
+export default function DashboardClient({ workouts, selectedDate }) {
+  const router = useRouter();
+  const [date, setDate] = useState(selectedDate ? new Date(selectedDate) : new Date());
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-6 p-8 max-w-2xl mx-auto w-full">
+    <div className="min-h-screen w-full">
+      <div className="p-8">
+        <h1 className="text-3xl font-bold tracking-tight">Liftingdiary</h1>
+      </div>
+      <div className="flex flex-col gap-6 px-8 pb-8 max-w-2xl mx-auto w-full">
       <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-semibold">Workout Log</h1>
+        <h2 className="text-2xl font-semibold">Workout Log</h2>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" className="gap-2">
@@ -27,7 +33,13 @@ export default function DashboardClient({ workouts }) {
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(d) => { if (d) { setDate(d); setOpen(false); } }}
+              onSelect={(d) => {
+                if (d) {
+                  setDate(d);
+                  setOpen(false);
+                  router.push(`/dashboard?date=${format(d, "yyyy-MM-dd")}`);
+                }
+              }}
               initialFocus
             />
           </PopoverContent>
@@ -92,6 +104,7 @@ export default function DashboardClient({ workouts }) {
           ))}
         </ul>
       )}
+      </div>
     </div>
   );
 }
