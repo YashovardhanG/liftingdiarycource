@@ -4,6 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
+## IMPORTANT: Always Consult `/docs` First
+
+Before writing any code, **always read the relevant file(s) in the `/docs` directory** for the feature or technology you are working with. These docs take precedence over training data and reflect the actual conventions used in this project. Do not assume behavior from prior knowledge 
+— docs/ui.md
+— docs/data-fetching.md
+
 ## Commands
 
 ```bash
