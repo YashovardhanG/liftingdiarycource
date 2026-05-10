@@ -29,6 +29,41 @@ export async function createWorkout(userId, data) {
   return workout;
 }
 
+export async function getWorkoutById(workoutId) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const email = user.emailAddresses[0]?.emailAddress;
+  if (!email) throw new Error("Unauthorized");
+
+  const [dbUser] = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
+
+  if (!dbUser) throw new Error("User not found");
+
+  const [workout] = await db
+    .select({
+      id: workoutsTable.id,
+      name: workoutsTable.name,
+      started_at: workoutsTable.started_at,
+    })
+    .from(workoutsTable)
+    .where(and(eq(workoutsTable.id, workoutId), eq(workoutsTable.user_id, dbUser.id)));
+
+  return workout ?? null;
+}
+
+export async function updateWorkout(userId, workoutId, data) {
+  const [workout] = await db
+    .update(workoutsTable)
+    .set(data)
+    .where(and(eq(workoutsTable.id, workoutId), eq(workoutsTable.user_id, userId)))
+    .returning({ id: workoutsTable.id });
+  return workout;
+}
+
 export async function getUserWorkouts(date = new Date()) {
   const user = await currentUser();
   if (!user) throw new Error("Unauthorized");

@@ -11,6 +11,8 @@ Before writing any code, **always read the relevant file(s) in the `/docs` direc
 — docs/data-fetching.md
 — docs/auth.md
 — docs/data-mutations.md
+— docs/server-components.md
+— docs/routing.md
 
 ## Commands
 

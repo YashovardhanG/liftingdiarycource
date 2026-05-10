@@ -1,0 +1,1 @@
+- [Docs registry conventions](project_docs_conventions.md) — em-dash bullet format, list location in CLAUDE.md, all registered docs files as of 2026-05-09

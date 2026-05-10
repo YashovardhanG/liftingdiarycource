@@ -16,7 +16,11 @@
       "Bash(git stash *)",
       "Bash(git merge *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(npx shadcn@latest add input label textarea --yes)",
+      "Bash(Get-Content \"C:\\\\Users\\\\yasho\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--personal-01-Learning-AI-ML-claudeProjects-liftingdiarycource\\\\81ef7617-cb7d-4f5e-b952-5dd1139e7aa3\\\\tasks\\\\bkrh6ch0d.output\")",
+      "Bash(Start-Sleep -Seconds 8)",
+      "Bash(git commit *)"
     ]
   },
   "enableAllProjectMcpServers": true,

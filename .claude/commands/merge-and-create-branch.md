@@ -1,0 +1,1 @@
+commit any changes in the current branch and provide a suitable commit message based on code changes.then merge the current btrach into the $1 branch and resolve any issues off the back of the merge. then create a new brach called $2
