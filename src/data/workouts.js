@@ -6,7 +6,7 @@ import {
   setsTable,
   usersTable,
 } from "@/db/schema";
-import { and, eq, gte, lt } from "drizzle-orm";
+import { and, eq, gte, lt, max } from "drizzle-orm";
 import { currentUser } from "@clerk/nextjs/server";
 
 function dayStart(date) {
@@ -53,6 +53,120 @@ export async function getWorkoutById(workoutId) {
     .where(and(eq(workoutsTable.id, workoutId), eq(workoutsTable.user_id, dbUser.id)));
 
   return workout ?? null;
+}
+
+export async function getWorkoutWithExercises(workoutId) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const email = user.emailAddresses[0]?.emailAddress;
+  if (!email) throw new Error("Unauthorized");
+
+  const [dbUser] = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
+
+  if (!dbUser) throw new Error("User not found");
+
+  const rows = await db
+    .select({
+      workoutId: workoutsTable.id,
+      workoutName: workoutsTable.name,
+      startedAt: workoutsTable.started_at,
+      workoutExerciseId: workoutExercisesTable.id,
+      exerciseName: exercisesTable.name,
+      setId: setsTable.id,
+      setNumber: setsTable.set_number,
+      reps: setsTable.reps,
+      weight: setsTable.weight,
+      weightUnit: setsTable.weight_unit,
+    })
+    .from(workoutsTable)
+    .leftJoin(workoutExercisesTable, eq(workoutExercisesTable.workout_id, workoutsTable.id))
+    .leftJoin(exercisesTable, eq(exercisesTable.id, workoutExercisesTable.exercise_id))
+    .leftJoin(setsTable, eq(setsTable.workout_exercise_id, workoutExercisesTable.id))
+    .where(and(eq(workoutsTable.id, workoutId), eq(workoutsTable.user_id, dbUser.id)))
+    .orderBy(workoutExercisesTable.order, setsTable.set_number);
+
+  if (rows.length === 0) return null;
+
+  const workout = {
+    id: String(rows[0].workoutId),
+    name: rows[0].workoutName,
+    started_at: rows[0].startedAt,
+    exercises: new Map(),
+  };
+
+  for (const row of rows) {
+    if (row.workoutExerciseId != null) {
+      if (!workout.exercises.has(row.workoutExerciseId)) {
+        workout.exercises.set(row.workoutExerciseId, {
+          workoutExerciseId: String(row.workoutExerciseId),
+          name: row.exerciseName,
+          sets: [],
+        });
+      }
+      if (row.setId != null) {
+        workout.exercises.get(row.workoutExerciseId).sets.push({
+          id: String(row.setId),
+          set_number: row.setNumber,
+          reps: row.reps,
+          weight: row.weight,
+          weight_unit: row.weightUnit,
+        });
+      }
+    }
+  }
+
+  return { ...workout, exercises: Array.from(workout.exercises.values()) };
+}
+
+export async function findOrCreateExercise(name) {
+  const [existing] = await db
+    .select({ id: exercisesTable.id })
+    .from(exercisesTable)
+    .where(eq(exercisesTable.name, name));
+
+  if (existing) return existing;
+
+  const [created] = await db
+    .insert(exercisesTable)
+    .values({ name })
+    .returning({ id: exercisesTable.id });
+  return created;
+}
+
+export async function addExerciseToWorkout(workoutId, exerciseId) {
+  const [{ maxOrder }] = await db
+    .select({ maxOrder: max(workoutExercisesTable.order) })
+    .from(workoutExercisesTable)
+    .where(eq(workoutExercisesTable.workout_id, workoutId));
+
+  const [workoutExercise] = await db
+    .insert(workoutExercisesTable)
+    .values({ workout_id: workoutId, exercise_id: exerciseId, order: (maxOrder ?? -1) + 1 })
+    .returning({ id: workoutExercisesTable.id });
+  return workoutExercise;
+}
+
+export async function addSetToWorkoutExercise(workoutExerciseId, { reps, weight, weight_unit }) {
+  const [{ maxSetNumber }] = await db
+    .select({ maxSetNumber: max(setsTable.set_number) })
+    .from(setsTable)
+    .where(eq(setsTable.workout_exercise_id, workoutExerciseId));
+
+  const [set] = await db
+    .insert(setsTable)
+    .values({
+      workout_exercise_id: workoutExerciseId,
+      set_number: (maxSetNumber ?? 0) + 1,
+      reps,
+      weight,
+      weight_unit,
+    })
+    .returning({ id: setsTable.id });
+  return set;
 }
 
 export async function updateWorkout(userId, workoutId, data) {

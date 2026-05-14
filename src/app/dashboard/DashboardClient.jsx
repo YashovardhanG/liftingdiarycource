@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Pencil } from "lucide-react";
 
 export default function DashboardClient({ workouts, selectedDate }) {
   const router = useRouter();
@@ -58,16 +58,26 @@ export default function DashboardClient({ workouts, selectedDate }) {
           {workouts.map((workout) => (
             <li key={workout.id}>
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-medium">
-                    {workout.name ?? "Unnamed workout"}
-                  </CardTitle>
-                  <p className="text-xs text-zinc-400">
-                    Started: {format(new Date(workout.started_at), "h:mm a")}
-                    {workout.completed_at && (
-                      <> · Finished: {format(new Date(workout.completed_at), "h:mm a")}</>
-                    )}
-                  </p>
+                <CardHeader className="pb-2 flex flex-row items-start justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-base font-medium">
+                      {workout.name ?? "Unnamed workout"}
+                    </CardTitle>
+                    <p className="text-xs text-zinc-400">
+                      Started: {format(new Date(workout.started_at), "h:mm a")}
+                      {workout.completed_at && (
+                        <> · Finished: {format(new Date(workout.completed_at), "h:mm a")}</>
+                      )}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => router.push(`/dashboard/workout/${workout.id}`)}
+                    aria-label="Edit workout"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {workout.exercises.length > 0 && (
